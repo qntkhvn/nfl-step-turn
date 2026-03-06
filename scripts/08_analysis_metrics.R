@@ -9,8 +9,7 @@ tracking_sim_example <- tracking_yards_eval |>
 # snapshot analysis at first contact
 
 # get tracking data for example play
-tracking <- arrow::read_parquet("data/tracking.parquet") |> 
-  filter(frameType != "BEFORE_SNAP")
+tracking <- arrow::read_parquet("data/tracking.parquet")
 
 tracking_example <- tracking |> 
   filter(gameId == 2022091810, playId == 2764) |> 
