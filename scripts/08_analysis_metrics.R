@@ -93,15 +93,19 @@ tracking_sim_example |>
   mutate(delta = yards_pred_obs_corrected - yards_pred_sim_corrected) |> 
   group_by(frameId) |> 
   summarize(mean_delta = mean(delta),
-            lower = quantile(delta, 0.025),
-            upper = quantile(delta, 0.975)) |> 
+            lower_delta = quantile(delta, 0.025),
+            upper_delta = quantile(delta, 0.975)) |> 
   ggplot() +
-  geom_ribbon(aes(frameId, mean_delta, ymin = lower, ymax = upper), alpha = 0.08) +
-  geom_line(aes(frameId, mean_delta), color = "red") +
-  labs(y = "Difference in yards gained") +
-  geom_vline(xintercept = 110) +
-  geom_vline(xintercept = 135)
-
+  geom_hline(yintercept = 0, linetype = "dashed", linewidth = 0.4, alpha = 0.5) +
+  geom_ribbon(aes(frameId, mean_delta, ymin = lower_delta, ymax = upper_delta), alpha = 0.08) +
+  geom_line(aes(frameId, mean_delta), color = "black") +
+  annotate("label", label = "Handoff", x = 89, y = 1.1, size = rel(2.4)) +
+  annotate("label", label = "First contact", x = 110, y = 2, size = rel(2.4)) +
+  annotate("label", label = "First down", x = 135, y = 2.3, size = rel(2.4)) +
+  annotate("label", label = "Tackle", x = 146.5, y = -1.5, size = rel(2.4)) +
+  scale_x_continuous(breaks = seq(100, 140, 20)) +
+  ylim(c(-6, 6)) +
+  labs(x = "Frame", y = "Difference in yards gained")
 
 # get players data
 players_name <- read_csv("data/players.csv") |> 
