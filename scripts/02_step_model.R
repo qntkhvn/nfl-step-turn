@@ -4,7 +4,7 @@ tracking_movement_data <- read_rds("assets/tracking_movement_data.rds")
 
 library(brms)
 
-step_brms <- brm(
+step_model <- brm(
   bf(
     step_length_asin ~ prev_step + adj_bc_x + adj_bc_y + adj_bc_x_from_first_down +
       n_left_bc_defense + n_front_bc_defense + n_left_bc_offense + n_front_bc_offense +
@@ -23,4 +23,4 @@ step_brms <- brm(
   data = tracking_movement_data
 )
 
-write_rds(step_brms, "assets/step_model.rds", compress = "gz")
+write_rds(step_model, "assets/step_model.rds", compress = "gz")

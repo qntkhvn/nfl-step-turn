@@ -137,6 +137,9 @@ tracking_yards_data <- tracking_bc |>
   mutate(across(contains("target_endzone"), abs, .names = "{col}_abs"),
          across(contains("adj_y_change"), abs, .names = "{col}_abs"))
 
+# save for later
+write_rds(tracking_yards_data, "assets/tracking_yards_data.rds", compress = "gz")
+
 
 # get model features
 all_cols <- names(tracking_yards_data)
@@ -191,4 +194,3 @@ tracking_yards_obs <- tracking_yards_data |>
 
 tracking_yards_obs |>
   write_rds("assets/tracking_yards_obs.rds", compress = "gz")
-
