@@ -5,16 +5,14 @@ games_week <- games |>
   select(gameId, week)
 
 tracking_yards_data <- read_rds("assets/tracking_yards_data.rds")
+yards_features <- read_rds("assets/yards_features.rds")
 
-tracking_yards_data_cv <- tracking_yards_data |> 
+tracking_yards_data_cv_weeks <- tracking_yards_data |> 
   left_join(games_week) |> 
-  select(gameId, playId, frameId, week, yards_gained, 
-         all_of(c(bc_features, defense_features, offense_features))) |> 
+  select(gameId, playId, frameId, week, yards_gained, all_of(yards_features)) |> 
   group_by(gameId, playId) |> 
   mutate(adj_frame = frameId - min(frameId)) |> 
   ungroup()
-
-yards_features <- read_rds("assets/yards_features.rds")
 
 # model comparison
 
@@ -23,12 +21,14 @@ library(glmnet)
 library(ranger)
 library(catboost)
 
+yards_lasso_cv <- read_rds("assets/yards_lasso_cv.rds")
+
 # leave-one-week-out cross-validation
 
 yards_cv <- function(x) {
   
   # training
-  train_data <- tracking_yards_data_cv |> 
+  train_data <- tracking_yards_data_cv_weeks |> 
     filter(week != x)
   
   x_train <- train_data |> 
@@ -45,13 +45,15 @@ yards_cv <- function(x) {
   
   # catboost
   train_pool <- catboost.load_pool(data = x_train, label = train_data$yards_gained)
-  cb_fit <- catboost.train(learn_pool = train_pool, params = list(learning_rate = 0.01))
+  cb_fit <- catboost.train(learn_pool = train_pool,
+                           params = list(iterations = 1000, learning_rate = 0.03, depth = 6))
   
   # lasso
-  lasso_fit <- cv.glmnet(as.matrix(x_train), train_data$yards_gained, alpha = 1)
+  lasso_fit <- glmnet(as.matrix(x_train), train_data$yards_gained, alpha = 1,
+                      lambda = yards_lasso_cv$lambda.1se)
   
   # testing
-  test_data <- tracking_yards_data_cv |> 
+  test_data <- tracking_yards_data_cv_weeks |> 
     filter(week == x)
   
   x_test <- test_data |> 
