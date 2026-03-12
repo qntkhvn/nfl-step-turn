@@ -11,7 +11,7 @@ tracking_yards_data_cv_folds <- tracking_yards_data |>
       distinct(gameId) |> 
       mutate(fold_id = sample(rep(1:5, length.out = n())))
   ) |> 
-  select(gameId, playId, frameId, fold_id, yards_gained, all_of(yards_features))
+  select(gameId, playId, frameId, fold_id, yards_gained, all_of(yards_features)) |> 
   group_by(gameId, playId) |> 
   mutate(adj_frame = frameId - min(frameId)) |> 
   ungroup()

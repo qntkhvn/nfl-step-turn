@@ -93,20 +93,16 @@ yards_cv_pred |>
                names_to = "type", 
                values_to = "test_pred") |> 
   group_by(type, adj_frame) |> 
-  summarize(
-    rmse = sqrt(mean((test_actual - test_pred)^2)),
-    n_frames = n()
-  ) |>
+  summarize(rmse = sqrt(mean((test_actual - test_pred)^2)),
+            n_frames = n()) |>
   ungroup() |> 
   filter(n_frames > 2) |>
   mutate(
-    type = case_when(
-      type == "cb_pred" ~ "CatBoost",
-      type == "gam_pred" ~ "GAM",
-      type == "lasso_pred" ~ "LASSO",
-      type == "lm_pred" ~ "Intercept-only",
-      type == "rf_pred" ~ "Random forests",
-    ),
+    type = case_when(type == "cb_pred" ~ "CatBoost",
+                     type == "gam_pred" ~ "GAM",
+                     type == "lasso_pred" ~ "LASSO",
+                     type == "lm_pred" ~ "Intercept-only",
+                     type == "rf_pred" ~ "Random forests"),
     type = factor(type, levels = c("Intercept-only", "LASSO", "GAM",
                                    "Random forests", "CatBoost"))
   ) |> 
@@ -136,13 +132,11 @@ yards_cv_pred |>
          lower_resid = avg_resid - 2 * se_resid,
          upper_resid = avg_resid + 2 * se_resid) |>
   mutate(
-    type = case_when(
-      type == "cb_pred" ~ "CatBoost",
-      type == "gam_pred" ~ "GAM",
-      type == "lasso_pred" ~ "LASSO",
-      type == "lm_pred" ~ "Intercept-only",
-      type == "rf_pred" ~ "Random forests",
-    ),
+    type = case_when(type == "cb_pred" ~ "CatBoost",
+                     type == "gam_pred" ~ "GAM",
+                     type == "lasso_pred" ~ "LASSO",
+                     type == "lm_pred" ~ "Intercept-only",
+                     type == "rf_pred" ~ "Random forests"),
     type = factor(type, levels = c("Intercept-only", "LASSO", "GAM", 
                                    "Random forests", "CatBoost"))
   ) |> 
