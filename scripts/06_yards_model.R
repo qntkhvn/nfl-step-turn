@@ -180,7 +180,9 @@ x_train <- tracking_yards_data |>
 
 train_pool <- catboost.load_pool(data = x_train, label = y_train)
 yards_model <- catboost.train(learn_pool = train_pool,
-                              params = list(learning_rate = 0.01,
+                              params = list(iterations = 1000, 
+                                            learning_rate = 0.03, 
+                                            depth = 6,
                                             random_seed = 90))
 yards_model |> 
   write_rds("assets/yards_model.rds", compress = "gz")
