@@ -36,6 +36,8 @@ yards_lasso_cv |>
 
 # tune catboost
 
+library(catboost)
+
 yards_cb_cv <- function(f, i = 1000, l = 0.01) {
   
   train_data <- tracking_yards_data_cv_folds |> 
