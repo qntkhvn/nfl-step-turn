@@ -1,6 +1,7 @@
 source("scripts/09_hypothetical_simulation.R")
 
 library(tidyverse)
+theme_set(theme_light())
 
 # tracking_yards_eval <- read_rds("assets/tracking_yards_eval.rds")
 

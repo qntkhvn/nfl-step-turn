@@ -1,4 +1,5 @@
 assets/tracking_yards_eval.rds
+assets/tracking_yards_eval_alt.rds
 
 # Derivative files
 **/*.DS_Store
