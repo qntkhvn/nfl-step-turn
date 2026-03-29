@@ -1,6 +1,8 @@
+source("scripts/09_hypothetical_simulation.R")
+
 library(tidyverse)
 
-tracking_yards_eval <- read_rds("assets/tracking_yards_eval.rds")
+# tracking_yards_eval <- read_rds("assets/tracking_yards_eval.rds")
 
 # example play
 tracking_sim_example <- tracking_yards_eval |> 
@@ -9,11 +11,10 @@ tracking_sim_example <- tracking_yards_eval |>
 # snapshot analysis at first contact
 
 # get tracking data for example play
-tracking <- arrow::read_parquet("data/tracking.parquet")
+tracking <- arrow::read_parquet("https://www.dropbox.com/scl/fi/vd8ohaorsxk4wfoeq0a3x/tracking.parquet?rlkey=x3oezh0hqj5355lkyf4tzhn0m&st=i8h3jzd7&dl=1")
 
 tracking_example <- tracking |> 
   filter(gameId == 2022091810, playId == 2764) |> 
-  read_rds("assets/tracking_example.rds") |> 
   mutate(
     pt_color = case_when(
       club == "football" ~ NA,
@@ -67,7 +68,7 @@ field_background +
   geom_point(aes(x, y, color = pt_color, size = pt_size),
              data = filter(tracking_example, frameId == 111, nflId == 53464)) +
   geom_point(aes(x, y, color = pt_color, size = pt_size),
-             data = filter(frameId == 111, nflId != 53464)) +
+             data = filter(tracking_example, frameId == 111, nflId != 53464)) +
   scale_color_identity() +
   scale_size_identity() +
   coord_cartesian(xlim = c(82.5, 86), ylim = c(15.5, 21.5)) +
@@ -108,7 +109,7 @@ tracking_sim_example |>
   labs(x = "Frame", y = "Difference in yards gained")
 
 # get players data
-players_name <- read_csv("data/players.csv") |> 
+players_name <- read_csv("assets/players.csv") |> 
   select(bc_id = nflId, displayName)
 
 tracking_movement_data <- read_rds("assets/tracking_movement_data.rds")
@@ -131,8 +132,20 @@ tracking_yards_eval |>
   arrange(-bc_ysr) |> 
   slice(1:5, (n()-4):n())
 
+# for comparison later
+tracking_yards_eval |>
+  mutate(dev = yards_pred_obs_corrected - yards_pred_sim_corrected) |>
+  filter(bc_id %in% bc_filtered) |>
+  group_by(gameId, playId, bc_id, frameId) |>
+  summarize(frame_ysr = mean(dev > 0)) |>
+  group_by(bc_id) |>
+  summarize(bc_ysr_generic = mean(frame_ysr)) |>
+  rename(nflId = bc_id) |>
+  write_rds("assets/ysr_generic.rds", compress = "gz")
+
 # explosiveness rankings
 
+# for comparison later
 tracking_yards_eval |> 
   filter(bc_id %in% bc_filtered) |> 
   group_by(gameId, playId, bc_id, frameId) |> 
@@ -145,3 +158,16 @@ tracking_yards_eval |>
   left_join(players_name) |> 
   arrange(-bc_explo) |> 
   slice(1:5, (n()-4):n())
+
+# for comparison later
+tracking_yards_eval |>
+  filter(bc_id %in% bc_filtered) |>
+  group_by(gameId, playId, bc_id, frameId) |>
+  summarize(frame_obs_yards = first(yards_pred_obs_corrected),
+            frame_sim_yards_tail = quantile(yards_pred_sim_corrected, 0.95)) |>
+  group_by(gameId, playId, bc_id) |>
+  summarize(play_explo = mean(frame_obs_yards > frame_sim_yards_tail)) |>
+  group_by(bc_id) |>
+  summarize(bc_explo_generic = mean(play_explo)) |>
+  rename(nflId = bc_id) |>
+  write_rds("assets/explo_generic.rds", compress = "gz")

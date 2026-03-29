@@ -1,4 +1,5 @@
 library(tidyverse)
+theme_set(theme_light())
 
 games <- read_csv("assets/games.csv")
 games_week <- games |> 
