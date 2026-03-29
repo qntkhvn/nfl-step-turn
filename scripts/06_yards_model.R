@@ -2,11 +2,11 @@ library(tidyverse)
 
 # prepare data first
 
-games <- read_csv("data/games.csv")
-plays <- read_csv("data/plays.csv")
-players <- read_csv("data/players.csv")
-player_play <- read_csv("data/player_play.csv")
-tracking <- arrow::read_parquet("data/tracking.parquet") |> 
+games <- read_csv("assets/games.csv")
+plays <- read_csv("assets/plays.csv")
+players <- read_csv("assets/players.csv")
+player_play <- read_csv("assets/player_play.csv")
+tracking <- arrow::read_parquet("https://www.dropbox.com/scl/fi/vd8ohaorsxk4wfoeq0a3x/tracking.parquet?rlkey=x3oezh0hqj5355lkyf4tzhn0m&st=i8h3jzd7&dl=1") |> 
   filter(frameType != "BEFORE_SNAP")
 
 tracking <- tracking |>
@@ -69,7 +69,6 @@ tracking_bc <- tracking_all |>
 # response
 plays_end_yardline <- tracking_bc |> 
   group_by(gameId, playId) |> 
-  # summarize(end_bc_x = max(bc_x)) |>
   summarize(end_bc_x = last(bc_x)) |>
   ungroup()
 
@@ -138,7 +137,7 @@ tracking_yards_data <- tracking_bc |>
          across(contains("adj_y_change"), abs, .names = "{col}_abs"))
 
 # save for later
-write_rds(tracking_yards_data, "assets/tracking_yards_data.rds", compress = "gz")
+# write_rds(tracking_yards_data, "assets/tracking_yards_data.rds", compress = "gz")
 
 
 # get model features
