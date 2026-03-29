@@ -1,21 +1,10 @@
 library(tidyverse)
 
-# tracking <- read_csv("data/tracking_week_1.csv") |> 
-#   bind_rows(read_csv("data/tracking_week_2.csv")) |> 
-#   bind_rows(read_csv("data/tracking_week_3.csv")) |> 
-#   bind_rows(read_csv("data/tracking_week_4.csv")) |> 
-#   bind_rows(read_csv("data/tracking_week_5.csv")) |> 
-#   bind_rows(read_csv("data/tracking_week_6.csv")) |> 
-#   bind_rows(read_csv("data/tracking_week_7.csv")) |> 
-#   bind_rows(read_csv("data/tracking_week_8.csv")) |> 
-#   bind_rows(read_csv("data/tracking_week_9.csv"))
-# arrow::write_parquet(tracking, "data/tracking.parquet")
-
-games <- read_csv("data/games.csv")
-plays <- read_csv("data/plays.csv")
-players <- read_csv("data/players.csv")
-player_play <- read_csv("data/player_play.csv")
-tracking <- arrow::read_parquet("data/tracking.parquet") |> 
+games <- read_csv("assets/games.csv")
+plays <- read_csv("assets/plays.csv")
+players <- read_csv("assets/players.csv")
+player_play <- read_csv("assets/player_play.csv")
+tracking <- arrow::read_parquet("https://www.dropbox.com/scl/fi/vd8ohaorsxk4wfoeq0a3x/tracking.parquet?rlkey=x3oezh0hqj5355lkyf4tzhn0m&st=i8h3jzd7&dl=1") |> 
   filter(frameType != "BEFORE_SNAP")
 
 tracking <- tracking |>
