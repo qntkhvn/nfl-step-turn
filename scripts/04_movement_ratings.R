@@ -1,9 +1,10 @@
 library(tidyverse)
+theme_set(theme_light())
 library(brms)
 library(tidybayes)
 
 tracking_movement_data <- read_rds("assets/tracking_movement_data.rds")
-players <- read_csv("data/players.csv")
+players <- read_csv("assets/players.csv")
 
 bc_filtered <- tracking_movement_data |> 
   distinct(gameId, playId, bc_id) |> 

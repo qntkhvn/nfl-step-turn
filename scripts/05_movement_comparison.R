@@ -1,4 +1,5 @@
 library(tidyverse)
+theme_set(theme_light())
 library(brms)
 library(tidybayes)
 
@@ -53,8 +54,6 @@ step_model_gamma <- brm(
   data = tracking_movement_data
 )
 
-pp_check(step_model_gamma)
-
 write_rds(step_model_gamma, "assets/step_model_gamma.rds", compress = "gz")
 
 # log-normal regression
@@ -80,6 +79,45 @@ step_model_lognormal <- brm(
   data = tracking_movement_data
 )
 
-pp_check(step_model_lognormal)
-
 write_rds(step_model_lognormal, "assets/step_model_lognormal.rds", compress = "gz")
+
+
+step_model_gamma <- read_rds("assets/step_model_gamma.rds")
+step_model_lognormal <- read_rds("assets/step_model_lognormal.rds")
+
+set.seed(100)
+step_draws <- step_model |> 
+  add_predicted_draws(newdata = tracking_movement_data, ndraws = 25)
+gaussian_draws <- step_draws |> 
+  ungroup() |> 
+  select(.prediction, .draw) |> 
+  mutate(.prediction = (sin(.prediction) ^ 2) * (upper - lower) + lower,
+         model = "Gaussian (transformation)")
+step_draws_gamma <- step_model_gamma |> 
+  add_predicted_draws(newdata = tracking_movement_data, ndraws = 25)
+gamma_draws <- step_draws_gamma |> 
+  ungroup() |> 
+  select(.prediction, .draw) |> 
+  mutate(model = "Gamma")
+
+step_draws_lognormal <- step_model_lognormal |> 
+  add_predicted_draws(newdata = tracking_movement_data, ndraws = 25)
+
+lognormal_draws <- step_draws_lognormal |> 
+  ungroup() |> 
+  select(.prediction, .draw) |> 
+  mutate(model = "Log-normal")
+
+gaussian_draws |> 
+  bind_rows(gamma_draws) |> 
+  bind_rows(lognormal_draws) |> 
+  mutate(model = ifelse(model == "Gaussian (transformation)", "Transformation", model),
+         model = factor(model, levels = c("Transformation", "Gamma", "Log-normal"))) |> 
+  ggplot() +
+  geom_density(aes(x = .prediction, group = .draw), 
+               color = "lightgray", linewidth = 0.3) +
+  geom_density(data = tracking_movement_data, aes(x = step_length), linewidth = 0.4,
+               alpha = 0.3) +
+  scale_x_continuous(limits = c(0, 3.5)) +
+  labs(x = "Step length", y = "Density") +
+  facet_wrap(~ model, nrow = 3) 
