@@ -1,10 +1,10 @@
 library(tidyverse)
 
-games <- read_csv("data/games.csv")
+games <- read_csv("assets/games.csv")
 games_week <- games |> 
   select(gameId, week)
 
-tracking_yards_data <- read_rds("assets/tracking_yards_data.rds")
+tracking_yards_data <- arrow::read_parquet("https://www.dropbox.com/scl/fi/l7cmffrdwqzd9b4fn8vht/tracking_yards_data.parquet?rlkey=dre99dumeyoj9je9gcbiizhyh&st=sxbtpgvr&dl=1")
 yards_features <- read_rds("assets/yards_features.rds")
 
 tracking_yards_data_cv_weeks <- tracking_yards_data |> 
@@ -41,7 +41,7 @@ yards_cv <- function(x) {
   gam_fit <- gam(yards_gained ~ s(bc_s) + s(defense_1_dist_to_bc), data = train_data)
   
   # rf
-  rf_fit <- ranger(y = train_data$yards_gained, x = x_train, num.threads = 30)
+  rf_fit <- ranger(y = train_data$yards_gained, x = x_train, num.threads = 5)
   
   # catboost
   train_pool <- catboost.load_pool(data = x_train, label = train_data$yards_gained)
@@ -63,7 +63,7 @@ yards_cv <- function(x) {
   
   tibble(lm_pred = predict(lm_fit, newdata = x_test),
          gam_pred = as.numeric(predict(gam_fit, newdata = x_test)),
-         rf_pred = predict(rf_fit, num.threads = 30, data = x_test)$predictions,
+         rf_pred = predict(rf_fit, num.threads = 5, data = x_test)$predictions,
          cb_pred = catboost.predict(cb_fit, test_pool),
          lasso_pred = as.numeric(predict(lasso_fit, as.matrix(x_test))),
          test_actual = test_data$yards_gained,

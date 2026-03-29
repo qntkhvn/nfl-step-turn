@@ -137,7 +137,7 @@ tracking_yards_data <- tracking_bc |>
          across(contains("adj_y_change"), abs, .names = "{col}_abs"))
 
 # save for later
-# write_rds(tracking_yards_data, "assets/tracking_yards_data.rds", compress = "gz")
+# arrow::write_parquet(tracking_yards_data, "assets/tracking_yards_data.parquet")
 
 
 # get model features
@@ -178,6 +178,9 @@ x_train <- tracking_yards_data |>
   select(all_of(c(bc_features, defense_features, offense_features)))
 
 train_pool <- catboost.load_pool(data = x_train, label = y_train)
+
+# model hyperparameters obtained from cross-validation
+# (see 07_yards_tuning.R)
 yards_model <- catboost.train(learn_pool = train_pool,
                               params = list(iterations = 1000, 
                                             learning_rate = 0.03, 

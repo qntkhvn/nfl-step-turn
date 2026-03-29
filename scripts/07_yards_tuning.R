@@ -1,6 +1,6 @@
 library(tidyverse)
 
-tracking_yards_data <- read_rds("assets/tracking_yards_data.rds")
+tracking_yards_data <- arrow::read_parquet("https://www.dropbox.com/scl/fi/l7cmffrdwqzd9b4fn8vht/tracking_yards_data.parquet?rlkey=dre99dumeyoj9je9gcbiizhyh&st=sxbtpgvr&dl=1")
 yards_features <- read_rds("assets/yards_features.rds")
 
 # split into 5 folds by game
@@ -18,15 +18,15 @@ tracking_yards_data_cv_folds <- tracking_yards_data |>
 
 # tune lasso
   
-y_train <- tracking_yards_data$yards_gained
-x_train <- tracking_yards_data |> 
+y_train <- tracking_yards_data_cv_folds$yards_gained
+x_train <- tracking_yards_data_cv_folds |> 
   select(all_of(yards_features)) |> 
   as.matrix()
 
 library(glmnet)
 set.seed(101)
 yards_lasso_cv <- cv.glmnet(x_train, y_train, alpha = 1, nfolds = 5, 
-                            foldid = tracking_yards_data$fold_id)
+                            foldid = tracking_yards_data_cv_folds$fold_id)
 
 # yards_lasso_cv$lambda.1se
 # yards_lasso_cv$lambda.min
